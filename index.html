@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Exercise Class 19</title>
+        <link rel="stylesheet" href="css/myStyle.css">
+    </head>
+    <body>
+
+        <p id="welcome">Welcome to Ninja Crush!</p>
+
+        <div id="statusBar">
+            <div id="info">
+                <p id="turns"></p>
+                <p id="score"></p>
+                <p id="bonus"></p>
+            </div>
+            <div id="options">
+                <form>
+                    <div>
+                        <label for="rowInputID">Amount of rows:</label>
+                        <input onfocusout="isNumber(event)" type="text" id="rowInputID" name="rowInputID">
+                        </div>
+                        <div></div>
+                        <label for="columnInputID">Amount of columns:</label>
+                        <input onfocusout="isNumber(event)" type="text" id="columnInputID" name="columnInputID">
+                    </div>
+                    <input type="button" value="RESET" onClick='injectTable("gameGrid", "rowInputID", "columnInputID")'>
+                </form>
+            </div>
+        </div>
+
+        <div id="gameGrid"></div>
+        <!-- TODO: -->
+        <div id="soundOptions"></div>
+
+        <script src="myScript.js"></script>
+
+    </body>
+</html>
