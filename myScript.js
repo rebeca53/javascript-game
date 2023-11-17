@@ -440,12 +440,12 @@ function setCellColor(id, newColor) {
 // GAME STATUS
 function updateCurrentScore(newScore) {
   let scoreView = document.getElementById("score");
-  scoreView.innerText = newScore + " points";
+  scoreView.innerText = newScore;
 }
 
 function updateTurn(newTurns) {
   let turnsView = document.getElementById("turns");
-  turnsView.innerText = newTurns + "  turns";
+  turnsView.innerText = newTurns;
 }
 
 function updateBonusMessage(bonus) {

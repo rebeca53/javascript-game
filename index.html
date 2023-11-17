@@ -7,28 +7,31 @@
     <body>
 
         <p id="welcome">Welcome to Ninja Crush!</p>
-
-        <div id="statusBar">
-            <div id="info">
-                <p id="turns"></p>
-                <p id="score"></p>
-                <p id="bonus"></p>
+        <div id="leftPane">
+            <div id="statusBar">
+                <div class="status"  id="turnsBox">
+                    <p class="statusData" id="turns"></p>
+                    <p>turns</p>
+                </div>
+                <div class="status" id="scoreBox" >
+                    <p class="statusData" id="score"></p>
+                    <p>points</p>
+                </div>
+                <p class="status" id="bonus"></p>
             </div>
+
             <div id="options">
                 <form>
-                    <div>
+
                         <label for="rowInputID">Amount of rows:</label>
                         <input type="text" id="rowInputID" name="rowInputID">
-                        </div>
-                        <div></div>
                         <label for="columnInputID">Amount of columns:</label>
                         <input type="text" id="columnInputID" name="columnInputID">
-                    </div>
+
                     <input type="button" id="resetButton" value="RESET">
                 </form>
             </div>
         </div>
-
         <div id="gameGrid"></div>
         <!-- TODO: -->
         <div id="soundOptions"></div>

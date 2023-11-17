@@ -2,20 +2,73 @@ body {
     background:#dbe5df; /* #c5e7ff ;*/
     font-family: 'Trebuchet MS', sans-serif;
     color: #1C1B1F;
-    /* margin: auto; */
-    padding: 10px;
+    margin: auto; 
+    /* padding: 10px;*/
+    width: fit-content;
+    display: grid;
+    grid-template-areas:
+    'header header header header header'
+    'menu main main main right'
+    'menu footer footer footer footer';
+}
+
+
+#welcome {
+    font-size: xx-large;
+    font-weight: bolder;
+    color: #1D192B;
+    grid-area: header;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#leftPane {
+    grid-area: menu
+}
+
+#statusBar {
+    display: grid;
+    align-items: center;
+    background-color: #002019;
+    border-radius: 10px;
+    width: 30;
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    margin: 10px;
+    background-color: #006b57;
+    border-radius: 10px;
+}
+
+.statusData {
+    font-weight: bold;
+    font-size: xx-large;
+}
+
+#options {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: fit-content;
+    margin: 10px; 
+}
+
+form {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
     width: fit-content;
 }
 
 p {
     font-size: medium;
     text-align: justify;
-}
-
-p::first-letter {
-    font-size: xx-large;
-    font-weight: bolder;
-    color: #1D192B;
 }
 
 input[type="button"] {
@@ -42,6 +95,8 @@ input[type="button"]:active {
 
 table {
     border: #1D192B;
+    margin: 20px;;
+    grid-area: main;
 }
 
 td {
