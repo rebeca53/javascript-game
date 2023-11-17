@@ -28,12 +28,12 @@ let colsNumber = 0;
 // generate a random color
 function generateColor() {
   let colors = [
-    greenCircle,
-    pinkSquare,
-    blueSquare,
-    redCircle,
-    yellowCircle,
-    brownSquare,
+    greenKunai,
+    purpleStar,
+    blueJutsu,
+    redNinja,
+    yellowNunchaku,
+    brownKatana,
   ];
   let colorInt = Math.floor(Math.random() * colors.length);
   return colors[colorInt];
@@ -57,6 +57,12 @@ class Cell {
     let cell = document.createElement("td");
     cell.setAttribute("id", id);
     cell.addEventListener("click", this.onClickCell);
+
+    let img = document.createElement("img");
+    cell.appendChild(img);
+    // pass event to the cell
+    img.addEventListener("click", this.imgListener);
+
     return cell;
   }
 
@@ -69,7 +75,8 @@ class Cell {
     this.color = newColor;
     this.cleared = this.color === "";
     // view
-    this.cellNode.innerText = newColor;
+    let img = this.cellNode.firstChild;
+    img.src = newColor;
   }
 
   isColorMatch(otherColor) {
@@ -96,22 +103,15 @@ class Cell {
     this.cleared = true;
     this.setColor("");
     this.unmarkCell();
-    // this.cellNode.style.borderColor = "red";
-    // this.cellNode.style.borderWidth = "1px";
-    // this.cellNode.style.borderStyle = "solid";
   }
 
-  copyColor(from) {
-    this.setColor(from.color);
-    if (from.marked) {
-      this.markCell();
-    } else {
-      this.unmarkCell();
-    }
+  imgListener(event) {
+    event.target.parentNode.click();
   }
 
   removeClickListener() {
     this.cellNode.removeEventListener("click", this.onClickCell);
+    this.cellNode.firstChild.removeEventListener("click", this.imgListener);
   }
 }
 
@@ -196,6 +196,10 @@ resetButton.addEventListener("click", () => {
   injectTable("gameGrid", "rowInputID", "columnInputID");
 });
 let animating = false;
+const clearDelayInMilliseconds = 500;
+const fallDownDelayInMilliseconds = 250;
+const fillDelayInMilliseconds = 250;
+
 function onClickCell(event) {
   if (animating) return;
   animating = true;
@@ -203,7 +207,6 @@ function onClickCell(event) {
   //mark cell on click
   console.log("id parsed " + parseId(cell.id));
   bonus = markAdjacentMatches(parseId(cell.id)[0], parseId(cell.id)[1]);
-  var delayInMilliseconds = 500; //1 second
 
   setTimeout(function () {
     //your code to be executed after 1 second
@@ -217,9 +220,9 @@ function onClickCell(event) {
         //your code to be executed after 1 second
         fillNewColors();
         animating = false;
-      }, delayInMilliseconds);
-    }, delayInMilliseconds);
-  }, delayInMilliseconds);
+      }, fillDelayInMilliseconds);
+    }, fallDownDelayInMilliseconds);
+  }, clearDelayInMilliseconds);
 
   turnsLeft--;
   updateTurn(turnsLeft);
@@ -338,7 +341,6 @@ function markAdjacentMatches(line, column) {
 }
 
 // TODO: to optmized, keep map of markeds
-// TODO: check if this step is still needed, if not, remove it
 function clearMarkedCells() {
   for (let i = rowsNumber - 1; i >= 0; i--) {
     for (let j = 0; j < colsNumber; j++) {
@@ -462,7 +464,7 @@ function gameOver() {
 function removeClickListeners() {
   for (let i = rowsNumber - 1; i >= 0; i--) {
     for (let j = 0; j < colsNumber; j++) {
-      getCell(i + "," + j).removeEventListener("click", onClickCell);
+      grid.get(i + "," + j).removeClickListener();
     }
   }
 }
