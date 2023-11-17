@@ -150,11 +150,6 @@ function createTable(rows, columns) {
 // generates the table using createTable; fetches the HTML element where to
 // inject the table based on anID; adds the table to the fetched HTML element
 function injectTable(anID, rowInputID, columnInputID) {
-  turnsLeft = DEFAULT_TURNS;
-  updateTurn(turnsLeft);
-  currentScore = 0;
-  updateCurrentScore(currentScore);
-
   let div = document.getElementById(anID);
   div.innerHTML = "";
   let rows = document.getElementById(rowInputID).value;
@@ -186,15 +181,19 @@ function validateNumber(event) {
 // INITIALIZE
 updateCurrentScore(currentScore);
 updateTurn(turnsLeft);
+
 // ADD LISTENERS
 let rowInput = document.getElementById("rowInputID");
 rowInput.addEventListener("focusout", validateNumber);
 let columnInput = document.getElementById("columnInputID");
 columnInput.addEventListener("focusout", validateNumber);
+
 let resetButton = document.getElementById("resetButton");
 resetButton.addEventListener("click", () => {
-  injectTable("gameGrid", "rowInputID", "columnInputID");
+  resetGame();
 });
+
+
 let animating = false;
 const clearDelayInMilliseconds = 500;
 const fallDownDelayInMilliseconds = 250;
@@ -454,11 +453,36 @@ function updateBonusMessage(bonus) {
   bonusView.innerText = bonusMessage;
 }
 
+function resetGame() {
+  removeGameOverMessage();
+
+  turnsLeft = DEFAULT_TURNS;
+  updateTurn(turnsLeft);
+  currentScore = 0;
+  updateCurrentScore(currentScore);
+
+  injectTable("gameGrid", "rowInputID", "columnInputID");
+}
+
 function gameOver() {
-  // todo: display game over message
-  let turnsView = document.getElementById("turns");
-  turnsView.innerText = "GAME OVER";
   removeClickListeners();
+  // clear the game grid
+  let parent = document.getElementById("gameGrid");
+  parent.innerHTML = "";
+
+  // add game over message
+  let gameOverMessage = document.createElement("p");
+  gameOverMessage.setAttribute("id", "gameOverMessage");
+  gameOverMessage.innerText = "Game Over!";
+  parent.appendChild(gameOverMessage);
+}
+
+function removeGameOverMessage() {
+  let gameOverMessage = document.getElementById("gameOverMessage");
+  if (gameOverMessage) {
+    let parent = document.getElementById("gameGrid");
+    parent.removeChild(gameOverMessage);
+  }
 }
 
 function removeClickListeners() {

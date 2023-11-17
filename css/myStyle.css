@@ -93,6 +93,16 @@ input[type="button"]:active {
     color: #7cf8d6;
 }
 
+#gameOverMessage {
+    background-color: #002019;
+    border-radius: 50px;
+    color: white;
+    font-size: xx-large;
+    padding: 150px 20px 150px 20px;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
 table {
     border: #1D192B;
     margin: 20px;;
