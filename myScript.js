@@ -3,6 +3,7 @@ const DEFAULT_TURNS = 5;
 let turnsLeft = DEFAULT_TURNS;
 let currentScore = 0;
 let bonus = false;
+const grid = new Map();
 
 // Using extended unicodes to display different colors and shapes
 // source: https://www.gaijin.at/en/infos/unicode-character-table-geometry
@@ -20,13 +21,8 @@ const redNinja = "img/ninja32px.png";
 const yellowNunchaku = "img/nunchaku32px.png";
 const purpleStar = "img/star32px.png";
 
-
 let rowsNumber = 0;
 let colsNumber = 0;
-
-// INITIALIZE VIEW
-updateCurrentScore(currentScore);
-updateTurn(turnsLeft);
 
 // ABSTRACTION
 // generate a random color
@@ -43,19 +39,83 @@ function generateColor() {
   return colors[colorInt];
 }
 
-// creates a single cell, with the argument
-// 'content' (a string) as content, and returns it
-function createCell(content) {
-  let cell = document.createElement("td");
-  cell.setAttribute("id", content);
-  console.log("id "+content);
-  cell.innerText = generateColor();
+class Cell {
+  constructor(id, onClickCell) {
+    this.id = id;
+    this.onClickCell = onClickCell;
 
-  cell.addEventListener("click", onClickCell);
+    this.cellNode = this.createCell(id);
+    this.color = generateColor();
+    this.setColor(this.color);
+    this.marked = false;
+    this.cleared = false;
+  }
 
-  return cell;
+  // creates a single cell, with the argument
+  // 'id' (a string) as id, and returns it
+  createCell(id) {
+    let cell = document.createElement("td");
+    cell.setAttribute("id", id);
+    cell.addEventListener("click", this.onClickCell);
+    return cell;
+  }
+
+  getCellColor() {
+    return this.color;
+  }
+
+  setColor(newColor) {
+    // model
+    this.color = newColor;
+    this.cleared = this.color === "";
+    // view
+    this.cellNode.innerText = newColor;
+  }
+
+  isColorMatch(otherColor) {
+    console.log("IS COLOR MATCH? " + this.color + " and " + otherColor);
+    return this.color === otherColor;
+  }
+
+  markCell() {
+    console.log("MARK CELL CLASS");
+    this.marked = true;
+    this.cellNode.style.borderColor = "red";
+    this.cellNode.style.borderWidth = "1px";
+    this.cellNode.style.borderStyle = "solid";
+  }
+
+  unmarkCell() {
+    this.marked = false;
+    this.cellNode.style.borderColor = "";
+    this.cellNode.style.borderWidth = "";
+    this.cellNode.style.borderStyle = "";
+  }
+
+  clearCell() {
+    this.cleared = true;
+    this.setColor("");
+    this.unmarkCell();
+    // this.cellNode.style.borderColor = "red";
+    // this.cellNode.style.borderWidth = "1px";
+    // this.cellNode.style.borderStyle = "solid";
+  }
+
+  copyColor(from) {
+    this.setColor(from.color);
+    if (from.marked) {
+      this.markCell();
+    } else {
+      this.unmarkCell();
+    }
+  }
+
+  removeClickListener() {
+    this.cellNode.removeEventListener("click", this.onClickCell);
+  }
 }
 
+/** ABSTRACT TABLE VIEW */
 // creates a single row and returns it
 function createRow() {
   let row = document.createElement("tr");
@@ -73,8 +133,9 @@ function createTable(rows, columns) {
     let row = createRow();
     for (let j = 0; j < columns; j++) {
       let content = i + "," + j;
-      let cell = createCell(content);
-      row.appendChild(cell);
+      let cell = new Cell(content, onClickCell); //createCell(content);
+      grid.set(content, cell);
+      row.appendChild(cell.cellNode);
     }
     table.appendChild(row);
   }
@@ -89,7 +150,6 @@ function createTable(rows, columns) {
 // generates the table using createTable; fetches the HTML element where to
 // inject the table based on anID; adds the table to the fetched HTML element
 function injectTable(anID, rowInputID, columnInputID) {
-
   turnsLeft = DEFAULT_TURNS;
   updateTurn(turnsLeft);
   currentScore = 0;
@@ -103,44 +163,63 @@ function injectTable(anID, rowInputID, columnInputID) {
   div.appendChild(table);
 }
 
-function isNumber(event) {
+function validateNumber(event) {
+  if (event.target.value === "") {
+    // Do nothing
+    return;
+  }
   if (isNaN(event.target.value)) {
     alert("Input is not a number. Try again.");
     event.target.value = "";
   }
+
+  if (event.target.value > 100) {
+    alert("Input is too big. Try a number smaller than or equal to 100.");
+    event.target.value = "";
+  } else if (event.target.value < 1) {
+    alert("Input must be a positive non-zero number.");
+    event.target.value = "";
+  }
 }
 
-function colorRedContent(event) {
-  event.target.style.color = "red";
-}
-
-function colorBlueContent(event) {
-  event.target.style.color = "blue";
-}
-
+/** MAIN GAME LOGIC */
+// INITIALIZE
+updateCurrentScore(currentScore);
+updateTurn(turnsLeft);
+// ADD LISTENERS
+let rowInput = document.getElementById("rowInputID");
+rowInput.addEventListener("focusout", validateNumber);
+let columnInput = document.getElementById("columnInputID");
+columnInput.addEventListener("focusout", validateNumber);
+let resetButton = document.getElementById("resetButton");
+resetButton.addEventListener("click", () => {
+  injectTable("gameGrid", "rowInputID", "columnInputID");
+});
+let animating = false;
 function onClickCell(event) {
+  if (animating) return;
+  animating = true;
   let cell = event.target;
-  //TODO: clear all other cells
   //mark cell on click
   console.log("id parsed " + parseId(cell.id));
   bonus = markAdjacentMatches(parseId(cell.id)[0], parseId(cell.id)[1]);
   var delayInMilliseconds = 500; //1 second
 
-setTimeout(function() {
-  //your code to be executed after 1 second
-  clearMarkedCells();
-
-  setTimeout(function() {
+  setTimeout(function () {
     //your code to be executed after 1 second
-    fallDownUnmarked();
+    clearMarkedCells();
 
-    setTimeout(function() {
+    setTimeout(function () {
       //your code to be executed after 1 second
-      fillNewColors();
+      fallDownUnmarked();
+
+      setTimeout(function () {
+        //your code to be executed after 1 second
+        fillNewColors();
+        animating = false;
+      }, delayInMilliseconds);
     }, delayInMilliseconds);
   }, delayInMilliseconds);
-
-}, delayInMilliseconds);
 
   turnsLeft--;
   updateTurn(turnsLeft);
@@ -150,25 +229,22 @@ setTimeout(function() {
     // updateBonusMessage(bonus);
   }, 4000);
 
-
   if (turnsLeft === 0) {
     gameOver();
   }
-  //TODO: forbid user to click other cells for now
 }
-
 
 // GAMING LOGIC FUNCTIONS
 // mark the matched colors in the right
 // stop when it finds a different color
 function markRight(line, column) {
-    console.log("mark right "+line+","+column);
+  console.log("mark right " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
   while (++column < colsNumber && marked) {
     marked = false;
-    if (getCellColor(line+","+column) === colorToCheck) {
+    if (getCellColor(line + "," + column) === colorToCheck) {
       markCell(line + "," + column);
       marked = true;
       increaseScore++;
@@ -181,14 +257,14 @@ function markRight(line, column) {
 // mark the matched colors in the left
 // stop when it finds a different color
 function markLeft(line, column) {
-    console.log("mark left "+line+","+column);
+  console.log("mark left " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
   while (column > 0 && marked) {
     marked = false;
     column--;
-    if (getCellColor(line+","+column) === colorToCheck) {
+    if (getCellColor(line + "," + column) === colorToCheck) {
       markCell(line + "," + column);
       marked = true;
       increaseScore++;
@@ -201,14 +277,14 @@ function markLeft(line, column) {
 // mark the matched colors in the up direction
 // stop when it finds a different color
 function markUp(line, column) {
-    console.log("mark up "+line+","+column);
+  console.log("mark up " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
   while (line > 0 && marked) {
     marked = false;
     line--;
-    if (getCellColor(line+","+column) === colorToCheck) {
+    if (getCellColor(line + "," + column) === colorToCheck) {
       markCell(line + "," + column);
       marked = true;
       increaseScore++;
@@ -221,13 +297,13 @@ function markUp(line, column) {
 // mark the matched colors in the down direction
 // stop when it finds a different color
 function markDown(line, column) {
-    console.log("mark down "+line+","+column);
+  console.log("mark down " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
   while (++line < rowsNumber && marked) {
     marked = false;
-    if (getCellColor(line+","+column) === colorToCheck) {
+    if (getCellColor(line + "," + column) === colorToCheck) {
       markCell(line + "," + column);
       marked = true;
       increaseScore++;
@@ -261,13 +337,13 @@ function markAdjacentMatches(line, column) {
   }
 }
 
-// TODO: intermediary step - clear all marked cells
-// TODO: to optmized, keep map ok markeds
+// TODO: to optmized, keep map of markeds
+// TODO: check if this step is still needed, if not, remove it
 function clearMarkedCells() {
   for (let i = rowsNumber - 1; i >= 0; i--) {
     for (let j = 0; j < colsNumber; j++) {
-      if (isMarked(i+","+j)) {
-        clearCell(i+","+j);
+      if (isMarked(i + "," + j)) {
+        clearCell(i + "," + j);
       }
     }
   }
@@ -281,14 +357,13 @@ function fallDownUnmarked() {
     swapped = false;
     for (let i = rowsNumber - 1; i > 0; i--) {
       for (let j = 0; j < colsNumber; j++) {
-        if (isCleared(i+","+j) && !isCleared((i - 1)+","+j)) {
+        if (isCleared(i + "," + j) && !isCleared(i - 1 + "," + j)) {
           console.log("swapp");
-          let temp = getCell(i+","+j).cloneNode(true);
-          // let temp = grid[i][j];
-         copyCellColor(getCell((i-1)+","+j), getCell(i+","+j));
-//          grid[i][j] = grid[i - 1][j];
-         copyCellColor(temp, getCell((i-1)+","+j));
-          // grid[i - 1][j] = temp;
+          let temp = getCellColor(i + "," + j); //getCell(i+","+j).cloneNode(true);
+          setCellColor(i + "," + j, getCellColor(i - 1 + "," + j));
+          //         copyCellColor(getCell((i-1)+","+j), getCell(i+","+j));
+          setCellColor(i - 1 + "," + j, temp);
+          //         copyCellColor(temp, getCell((i-1)+","+j));
           swapped = true;
         }
       }
@@ -304,10 +379,10 @@ function fillNewColors() {
     filled = false;
     for (let i = rowsNumber - 1; i >= 0; i--) {
       for (let j = 0; j < colsNumber; j++) {
-        if (isCleared(i+","+j)) {
+        if (isCleared(i + "," + j)) {
           console.log("fill");
-          unmarkCell(i+","+j);
-          getCell(i+","+j).innerText = generateColor();
+          unmarkCell(i + "," + j);
+          setCellColor(i + "," + j, generateColor());
           filled = true;
         }
       }
@@ -315,12 +390,11 @@ function fillNewColors() {
   }
 }
 
-
-// GETTERS AND HELPERS
+// GAME GRID - GETTERS AND HELPERS
 function parseId(id) {
-    let splitted = id.split(",");
-    let result = [splitted[0], splitted[1]];
-    console.log("parse result "+result);
+  let splitted = id.split(",");
+  let result = [splitted[0], splitted[1]];
+  //  console.log("parse result "+result);
   return result;
 }
 
@@ -329,67 +403,47 @@ function getCell(id) {
 }
 
 function markCell(id) {
-  let cell = document.getElementById(id);
-  cell.style.borderColor = "red";
-  cell.style.borderWidth = "1px";
-  cell.style.borderStyle = "solid";
+  grid.get(id).markCell();
 }
 
 function unmarkCell(id) {
-  let cell = document.getElementById(id);
-  cell.style.borderColor = "";
-  cell.style.borderWidth = "";
-  cell.style.borderStyle = "";
+  grid.get(id).unmarkCell();
 }
 
 function clearCell(id) {
-  let cell = document.getElementById(id);
-  cell.innerText = "";
-  cell.style.borderColor = "red";
-  cell.style.borderWidth = "1px";
-  cell.style.borderStyle = "solid";
+  grid.get(id).clearCell();
 }
 
 function isMarked(id) {
-  // console.log("get is marked "+id);
-  
-  let cell = document.getElementById(id);
-  console.log(cell);
-  return cell.style.borderColor === "red";
+  return grid.get(id).marked;
 }
 
 function isCleared(id) {
-  // console.log("get is marked "+id);
-  let cell = document.getElementById(id);
-  console.log(cell);
-  return cell.innerText === "";
+  return grid.get(id).cleared;
+}
+
+function getCellNode(id) {
+  return grid.get(id).getCellNode();
 }
 
 function getCellColor(id) {
-  console.log("get cell color "+id);
-  let cell = document.getElementById(id);
-  console.log(cell);
-  return cell.innerText;
+  console.log("get cell color " + id);
+  return grid.get(id).getCellColor();
 }
 
-function copyCellColor(from, to) {
-  to.innerText = from.innerText;
-  to.style.borderColor = from.style.borderColor;
-  to.style.borderWidth = from.style.borderWidth;
-  to.style.borderStyle = from.style.borderStyle;
-
-  console.log("from "+from);
-  console.log("to "+to);
+function setCellColor(id, newColor) {
+  grid.get(id).setColor(newColor);
 }
 
+// GAME STATUS
 function updateCurrentScore(newScore) {
   let scoreView = document.getElementById("score");
-  scoreView.innerText = newScore+" points";
+  scoreView.innerText = newScore + " points";
 }
 
 function updateTurn(newTurns) {
   let turnsView = document.getElementById("turns");
-  turnsView.innerText = newTurns+"  turns";
+  turnsView.innerText = newTurns + "  turns";
 }
 
 function updateBonusMessage(bonus) {
@@ -402,14 +456,13 @@ function gameOver() {
   // todo: display game over message
   let turnsView = document.getElementById("turns");
   turnsView.innerText = "GAME OVER";
-
   removeClickListeners();
 }
 
 function removeClickListeners() {
   for (let i = rowsNumber - 1; i >= 0; i--) {
     for (let j = 0; j < colsNumber; j++) {
-        getCell(i+","+j).removeEventListener("click", onClickCell);
+      getCell(i + "," + j).removeEventListener("click", onClickCell);
     }
   }
 }

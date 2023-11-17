@@ -9,71 +9,92 @@
  * remove listener
  */
 
-let id = "";
-let color = "";
-let marked = false;
-let cleared = false;
-let path = "";
+const greenCircle = "\u{1F7E2}";
+const pinkSquare = "\u{1F7EA}";
+const blueSquare = "\u{1F7E6}";
+const redCircle = "\u{1F7E0}";
+const yellowCircle = "\u{1F7E1}";
+const brownSquare = "\u{1F7EB}";
 
-// constructor
-// returns the HTML element with the img content
-function createCell() {
-    
+// generate a random color
+function generateColor() {
+  let colors = [
+    greenCircle,
+    pinkSquare,
+    blueSquare,
+    redCircle,
+    yellowCircle,
+    brownSquare,
+  ];
+  let colorInt = Math.floor(Math.random() * colors.length);
+  return colors[colorInt];
 }
+class Cell {
+  constructor(id, onClickCell) {
+    this.id = id;
+    this.onClickCell = onClickCell;
 
+    this.color = generateColor();
+    this.marked = false;
+    this.cleared = false;
+    this.cellNode = createCell(id);
+    this.setColor();
+  }
 
+  // creates a single cell, with the argument
+  // 'id' (a string) as id, and returns it
+  createCell(id) {
+    let cell = document.createElement("td");
+    cell.setAttribute("id", id);
+    console.log("id " + content); // debug
+    cell.addEventListener("click", this.onClickCell);
+    return cell;
+  }
 
-function getCellView() {
+  setColor(newColor) {
+    // model
+    color = newColor;
+    // view
+    this.cellNode.innerText = newColor;
+  }
 
-}
-
-function isColorMatch(otherCell) {
+  isColorMatch(otherCell) {
     return this.color === otherCell.color;
-}
+  }
 
-function markCell(id) {
+  markCell() {
     marked = true;
-    let cell = document.getElementById(id);
-    cell.style.borderColor = "red";
-    cell.style.borderWidth = "1px";
-    cell.style.borderStyle = "solid";
+    this.cellNode.style.borderColor = "red";
+    this.cellNode.style.borderWidth = "1px";
+    this.cellNode.style.borderStyle = "solid";
   }
-  
-  function unmarkCell(id) {
-    marked = false;
-    let cell = document.getElementById(id);
-    cell.style.borderColor = "";
-    cell.style.borderWidth = "";
-    cell.style.borderStyle = "";
-  }
-  
-  function clearCell(id) {
-    cleared = true;
-    let cell = document.getElementById(id);
-    cell.innerText = "";
-    cell.style.borderColor = "red";
-    cell.style.borderWidth = "1px";
-    cell.style.borderStyle = "solid";
-  }
-  
-  function getCellColor(id) {
-    console.log("get cell color "+id);
-    let cell = document.getElementById(id);
-    console.log(cell);
-    return cell.innerText;
-  }
-  
-  function setColor() {
 
+  unmarkCell() {
+    marked = false;
+    this.cellNode.style.borderColor = "";
+    this.cellNode.style.borderWidth = "";
+    this.cellNode.style.borderStyle = "";
   }
-  
-  function copyCellColor(from, to) {
-    to.innerText = from.innerText;
-    to.style.borderColor = from.style.borderColor;
-    to.style.borderWidth = from.style.borderWidth;
-    to.style.borderStyle = from.style.borderStyle;
-  
-    console.log("from "+from);
-    console.log("to "+to);
+
+  clearCell() {
+    cleared = true;
+    this.setColor("");
+    // unmarkCell();
+    this.cellNode.style.borderColor = "red";
+    this.cellNode.style.borderWidth = "1px";
+    this.cellNode.style.borderStyle = "solid";
   }
-  
+
+  copyColor(from) {
+    this.setColor(from.color);
+    if (from.marked) {
+      this.markCell();
+    } else {
+      this.unmarkCell();
+    }
+  }
+
+  removeClickListener() {
+    this.cellNode.removeEventListener("click", this.onClickCell);
+  }
+}

@@ -18,13 +18,13 @@
                 <form>
                     <div>
                         <label for="rowInputID">Amount of rows:</label>
-                        <input onfocusout="isNumber(event)" type="text" id="rowInputID" name="rowInputID">
+                        <input type="text" id="rowInputID" name="rowInputID">
                         </div>
                         <div></div>
                         <label for="columnInputID">Amount of columns:</label>
-                        <input onfocusout="isNumber(event)" type="text" id="columnInputID" name="columnInputID">
+                        <input type="text" id="columnInputID" name="columnInputID">
                     </div>
-                    <input type="button" value="RESET" onClick='injectTable("gameGrid", "rowInputID", "columnInputID")'>
+                    <input type="button" id="resetButton" value="RESET">
                 </form>
             </div>
         </div>
