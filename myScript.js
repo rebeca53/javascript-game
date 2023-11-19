@@ -218,6 +218,12 @@ function onClickCell(event) {
         //your code to be executed after 1 second
         fillNewColors();
         animating = false;
+        
+        setTimeout(( )=> {
+          if (turnsLeft === 0) {
+            gameOver();
+          }
+        }, 1000);
       }, fillDelayInMilliseconds);
     }, fallDownDelayInMilliseconds);
   }, clearDelayInMilliseconds);
@@ -229,10 +235,6 @@ function onClickCell(event) {
     bonus = false;
     // updateBonusMessage(bonus);
   }, 4000);
-
-  if (turnsLeft === 0) {
-    gameOver();
-  }
 }
 
 // GAMING LOGIC FUNCTIONS
