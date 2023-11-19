@@ -150,25 +150,24 @@ function createTable(rows, columns) {
 // generates the table using createTable; fetches the HTML element where to
 // inject the table based on anID; adds the table to the fetched HTML element
 function injectTable(anID, rowInputID, columnInputID) {
+  let rows = parseInt(document.getElementById(rowInputID).value);
+  let columns = parseInt(document.getElementById(columnInputID).value);
+  if (isNaN(rows) || isNaN(columns)) {
+    alert("Please, input amount of rows and amount of columns.");
+    return;
+  }
+
   let div = document.getElementById(anID);
   div.innerHTML = "";
-  let rows = document.getElementById(rowInputID).value;
-  let columns = document.getElementById(columnInputID).value;
   let table = createTable(rows, columns);
   div.appendChild(table);
 }
 
 function validateNumber(event) {
-  if (event.target.value === "") {
-    // Do nothing
-    return;
-  }
   if (isNaN(event.target.value)) {
     alert("Input is not a number. Try again.");
     event.target.value = "";
-  }
-
-  if (event.target.value > 100) {
+  } else if (event.target.value > 100) {
     alert("Input is too big. Try a number smaller than or equal to 100.");
     event.target.value = "";
   } else if (event.target.value < 1) {
