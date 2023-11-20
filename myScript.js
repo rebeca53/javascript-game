@@ -5,15 +5,7 @@ let currentScore = 0;
 let bonus = false;
 const grid = new Map();
 
-// Using extended unicodes to display different colors and shapes
-// source: https://www.gaijin.at/en/infos/unicode-character-table-geometry
-const greenCircle = "\u{1F7E2}";
-const pinkSquare = "\u{1F7EA}";
-const blueSquare = "\u{1F7E6}";
-const redCircle = "\u{1F7E0}";
-const yellowCircle = "\u{1F7E1}";
-const brownSquare = "\u{1F7EB}";
-
+// Color/image options
 const blueJutsu = "img/jutsu32px.png";
 const brownKatana = "img/katana32px.png";
 const greenKunai = "img/kunai32px.png";
@@ -24,146 +16,89 @@ const purpleStar = "img/star32px.png";
 let rowsNumber = 0;
 let colsNumber = 0;
 
-// ABSTRACTION
-// generate a random color
-function generateColor() {
-  let colors = [
-    greenKunai,
-    purpleStar,
-    blueJutsu,
-    redNinja,
-    yellowNunchaku,
-    brownKatana,
-  ];
-  let colorInt = Math.floor(Math.random() * colors.length);
-  return colors[colorInt];
+// HTML elements
+let rowInput = document.getElementById("rowInputID");
+let columnInput = document.getElementById("columnInputID");
+let fightSpiritSoundEffect = new Audio("audio/Naruto - The Rising Fighting Spirit.mp3");
+let bonusSoundEffect = new Audio("audio/dattebayo.mp3");
+let scoreSoundEffect = new Audio("audio/smoke_bomb.mp3");
+let resetButton = document.getElementById("resetButton");
+
+// Setting animation variables
+let animating = false;
+const clearDelayInMilliseconds = 500;
+const fallDownDelayInMilliseconds = 250;
+const fillDelayInMilliseconds = 250;
+
+/** MAIN GAME LOGIC */
+// INITIALIZE
+updateCurrentScore(currentScore);
+updateTurn(turnsLeft);
+
+// ADD LISTENERS
+rowInput.addEventListener("focusout", validateNumber);
+columnInput.addEventListener("focusout", validateNumber);
+resetButton.addEventListener("click", resetGame);
+
+ // Set background music to play in loop
+fightSpiritSoundEffect.loop = true;
+
+// EVENT HANDLERS
+/**
+ * This function holds the game logic.
+ * When user clicks a cell:
+ * - Mark the cell and the adjacent matches
+ * - Clear the marked cells
+ * - Fill with new colors
+ * - Apply bonus rules
+ * - Update score, turns and bonus message
+ * - Game over, if applicable 
+ * @param {*} event 
+ */
+function onClickCell(event) {
+  // Check if there is still animation from the previous "click" event
+  // Do nothing until previous animation is done
+  if (animating) return;
+  animating = true;
+
+  let cell = event.target;
+  //mark cell and play score sound on click
+  scoreSoundEffect.play();
+  bonus = markAdjacentMatches(parseId(cell.id)[0], parseId(cell.id)[1]);
+
+  // Apply delay between each step of the game scoring to give an animation effect
+  setTimeout(function () {
+    clearMarkedCells();
+    setTimeout(function () {
+      fallDownUnmarked();
+      setTimeout(function () {
+        fillNewColors();
+        animating = false;
+        // Delay to display game over after user sees the updated score
+        setTimeout(( )=> {
+          if (turnsLeft === 0) {
+            gameOver();
+          }
+        }, 1000);
+      }, fillDelayInMilliseconds);
+    }, fallDownDelayInMilliseconds);
+  }, clearDelayInMilliseconds);
+  turnsLeft--;
+
+  // Update score and turns on the screen
+  updateTurn(turnsLeft);
+  updateBonusMessage(bonus);
+  // Reset bonus value to be computed in the next round
+  setTimeout(() => {
+    bonus = false;
+  }, 4000);
 }
 
-class Cell {
-  constructor(id, onClickCell) {
-    this.id = id;
-    this.onClickCell = onClickCell;
-
-    this.cellNode = this.createCell(id);
-    this.color = generateColor();
-    this.setColor(this.color);
-    this.marked = false;
-    this.cleared = false;
-  }
-
-  // creates a single cell, with the argument
-  // 'id' (a string) as id, and returns it
-  createCell(id) {
-    let cell = document.createElement("td");
-    cell.setAttribute("id", id);
-    cell.addEventListener("click", this.onClickCell);
-
-    let img = document.createElement("img");
-    cell.appendChild(img);
-    // pass event to the cell
-    img.addEventListener("click", this.imgListener);
-
-    return cell;
-  }
-
-  getCellColor() {
-    return this.color;
-  }
-
-  setColor(newColor) {
-    // model
-    this.color = newColor;
-    this.cleared = this.color === "";
-    // view
-    let img = this.cellNode.firstChild;
-    img.src = newColor;
-  }
-
-  isColorMatch(otherColor) {
-    console.log("IS COLOR MATCH? " + this.color + " and " + otherColor);
-    return this.color === otherColor;
-  }
-
-  markCell() {
-    console.log("MARK CELL CLASS");
-    this.marked = true;
-    this.cellNode.style.borderColor = "red";
-    this.cellNode.style.borderWidth = "1px";
-    this.cellNode.style.borderStyle = "solid";
-  }
-
-  unmarkCell() {
-    this.marked = false;
-    this.cellNode.style.borderColor = "";
-    this.cellNode.style.borderWidth = "";
-    this.cellNode.style.borderStyle = "";
-  }
-
-  clearCell() {
-    this.cleared = true;
-    this.setColor("");
-    this.unmarkCell();
-  }
-
-  imgListener(event) {
-    event.target.parentNode.click();
-  }
-
-  removeClickListener() {
-    this.cellNode.removeEventListener("click", this.onClickCell);
-    this.cellNode.firstChild.removeEventListener("click", this.imgListener);
-  }
-}
-
-/** ABSTRACT TABLE VIEW */
-// creates a single row and returns it
-function createRow() {
-  let row = document.createElement("tr");
-  return row;
-}
-
-// creates the table, using createRow and
-// createCell, and returns it
-function createTable(rows, columns) {
-  rowsNumber = rows;
-  colsNumber = columns;
-
-  let table = document.createElement("table");
-  for (let i = 0; i < rows; i++) {
-    let row = createRow();
-    for (let j = 0; j < columns; j++) {
-      let content = i + "," + j;
-      let cell = new Cell(content, onClickCell); //createCell(content);
-      grid.set(content, cell);
-      row.appendChild(cell.cellNode);
-    }
-    table.appendChild(row);
-  }
-
-  table.style.borderColor = "black";
-  table.style.borderWidth = "2px";
-  table.style.borderStyle = "solid";
-  return table;
-}
-
-// reads amount of rows and colums from the input fields with IDs rowInputID and columnInputID;
-// generates the table using createTable; fetches the HTML element where to
-// inject the table based on anID; adds the table to the fetched HTML element
-function injectTable(anID, rowInputID, columnInputID) {
-  let rows = parseInt(document.getElementById(rowInputID).value);
-  let columns = parseInt(document.getElementById(columnInputID).value);
-  if (isNaN(rows) || isNaN(columns)) {
-    alert("Please, input amount of rows and amount of columns.");
-    return false;
-  }
-
-  let div = document.getElementById(anID);
-  div.innerHTML = "";
-  let table = createTable(rows, columns);
-  div.appendChild(table);
-  return true;
-}
-
+/**
+ * Event handler for the fields to input the rows and the columns number.
+ * Check if they are valid numbers from 1 to 100.
+ * @param {*} event 
+ */
 function validateNumber(event) {
   if (isNaN(event.target.value)) {
     alert("Input is not a number. Try again.");
@@ -177,74 +112,34 @@ function validateNumber(event) {
   }
 }
 
-/** MAIN GAME LOGIC */
-// INITIALIZE
-updateCurrentScore(currentScore);
-updateTurn(turnsLeft);
+/**
+ * Event handler called when user press the RESET button.
+ * - Removes the GameOver message
+ * - Resets the turnsLeft and the score, and updates the UI accordingly
+ * - Inject the game grid
+ * - Then, starts the background music
+ */
+function resetGame() {
+  removeGameOverMessage();
 
-// ADD LISTENERS
-let rowInput = document.getElementById("rowInputID");
-rowInput.addEventListener("focusout", validateNumber);
-let columnInput = document.getElementById("columnInputID");
-columnInput.addEventListener("focusout", validateNumber);
-
-let resetButton = document.getElementById("resetButton");
-resetButton.addEventListener("click", () => {
-  resetGame();
-});
-
-let fightSpiritSoundEffect = new Audio("audio/Naruto - The Rising Fighting Spirit.mp3");
-fightSpiritSoundEffect.loop = true;
-
-let bonusSoundEffect = new Audio("audio/dattebayo.mp3");
-let scoreSoundEffect = new Audio("audio/smoke_bomb.mp3");
-
-let animating = false;
-const clearDelayInMilliseconds = 500;
-const fallDownDelayInMilliseconds = 250;
-const fillDelayInMilliseconds = 250;
-
-function onClickCell(event) {
-  if (animating) return;
-  animating = true;
-  let cell = event.target;
-  //mark cell on click
-  console.log("id parsed " + parseId(cell.id));
-  scoreSoundEffect.play();
-  bonus = markAdjacentMatches(parseId(cell.id)[0], parseId(cell.id)[1]);
-
-  setTimeout(function () {
-    //your code to be executed after 1 second
-    clearMarkedCells();
-
-    setTimeout(function () {
-      //your code to be executed after 1 second
-      fallDownUnmarked();
-
-      setTimeout(function () {
-        //your code to be executed after 1 second
-        fillNewColors();
-        animating = false;
-        
-        setTimeout(( )=> {
-          if (turnsLeft === 0) {
-            gameOver();
-          }
-        }, 1000);
-      }, fillDelayInMilliseconds);
-    }, fallDownDelayInMilliseconds);
-  }, clearDelayInMilliseconds);
-
-  turnsLeft--;
+  turnsLeft = DEFAULT_TURNS;
   updateTurn(turnsLeft);
-  updateBonusMessage(bonus);
-  setTimeout(() => {
-    bonus = false;
-    // updateBonusMessage(bonus);
-  }, 4000);
+  currentScore = 0;
+  updateCurrentScore(currentScore);
+
+  // As user is able to press the RESET button, before inputing the rows and columns
+  // Check if the input is valid before starting the game
+  let rows = parseInt(document.getElementById("rowInputID").value);
+  let columns = parseInt(document.getElementById("columnInputID").value);
+  if (isNaN(rows) || isNaN(columns)) {
+    alert("Please, input amount of rows and amount of columns.");
+  } else {
+    injectTable("gameGrid", "rowInputID", "columnInputID");
+    fightSpiritSoundEffect.play();
+  }
 }
 
-// GAMING LOGIC FUNCTIONS
+// GAMING LOGIC FUNCTIONS: functions called by the onClickCell
 // mark the matched colors in the right
 // stop when it finds a different color
 function markRight(line, column) {
@@ -347,7 +242,6 @@ function markAdjacentMatches(line, column) {
   }
 }
 
-// TODO: to optmized, keep map of markeds
 function clearMarkedCells() {
   for (let i = rowsNumber - 1; i >= 0; i--) {
     for (let j = 0; j < colsNumber; j++) {
@@ -444,7 +338,187 @@ function setCellColor(id, newColor) {
   grid.get(id).setColor(newColor);
 }
 
-// GAME STATUS
+// generate a random color
+function generateColor() {
+  let colors = [
+    greenKunai,
+    purpleStar,
+    blueJutsu,
+    redNinja,
+    yellowNunchaku,
+    brownKatana,
+  ];
+  let colorInt = Math.floor(Math.random() * colors.length);
+  return colors[colorInt];
+}
+
+/** ABSTRACT TABLE VIEW */
+/**
+ * Reads amount of rows and columns, generates the table using createTable and
+ * add the table to the fetched HTML element.
+ * @param {*} anID The id of the HTML element where to inject the table
+ * @param {*} rowInputID The id of the input field for the number of rows
+ * @param {*} columnInputID The if of the input field for the number of columns
+ * @returns false if the column and row number is invalid, false otherwise.
+ */
+function injectTable(anID, rowInputID, columnInputID) {
+  let rows = parseInt(document.getElementById(rowInputID).value);
+  let columns = parseInt(document.getElementById(columnInputID).value);
+  let div = document.getElementById(anID);
+  div.innerHTML = "";
+  let table = createTable(rows, columns);
+  div.appendChild(table);
+}
+
+/**
+ * Creates the table. It calls createRow and createCell
+ * @param {*} rows The number of rows in the table
+ * @param {*} columns The number of columns in the table
+ * @returns the table HTML element
+ */
+function createTable(rows, columns) {
+  rowsNumber = rows;
+  colsNumber = columns;
+
+  let table = document.createElement("table");
+  for (let i = 0; i < rows; i++) {
+    let row = createRow();
+    for (let j = 0; j < columns; j++) {
+      let content = i + "," + j;
+      let cell = new Cell(content, onClickCell); //createCell(content);
+      grid.set(content, cell);
+      row.appendChild(cell.cellNode);
+    }
+    table.appendChild(row);
+  }
+
+  table.style.borderColor = "black";
+  table.style.borderWidth = "2px";
+  table.style.borderStyle = "solid";
+  return table;
+}
+
+/**
+ * Creates a single row
+ * @returns the row HTML element
+ */
+function createRow() {
+  let row = document.createElement("tr");
+  return row;
+}
+
+// ABSTRACT A CELL
+/**
+ * This class defines a Cell as a td HTML element with a Image child.
+ * It works as a level of abstraction.
+ * It stores properties like color, marked, and cleared to avoid direct access
+ * to the HTML elements.
+ */
+class Cell {
+  /**
+   * Constructor of a cell will:
+   * - store the id
+   * - create the td and the img
+   * - Add the listener
+   * - set random color/image
+   * @param {*} id the id is a string in the format (line,column)
+   * @param {*} onClickCell the click event handler function 
+   */
+  constructor(id, onClickCell) {
+    this.id = id;
+    this.onClickCell = onClickCell;
+
+    this.cellNode = this.createCell(id);
+    this.color = generateColor();
+    this.setColor(this.color);
+    this.marked = false;
+    this.cleared = false;
+  }
+
+  // creates a single cell, with the argument
+  // 'id' (a string) as id, and returns it
+  createCell(id) {
+    let cell = document.createElement("td");
+    cell.setAttribute("id", id);
+    cell.addEventListener("click", this.onClickCell);
+
+    let img = document.createElement("img");
+    cell.appendChild(img);
+    // pass event to the cell
+    img.addEventListener("click", this.imgListener);
+
+    return cell;
+  }
+
+  /**
+   * A getter to abstract the color without direct access to the HTML element
+   * @returns the current color
+   */
+  getCellColor() {
+    return this.color;
+  }
+
+  /**
+   * Assigns a new color/image by changing the src of the image
+   * @param {*} newColor The color/image to assign to the cell
+   */
+  setColor(newColor) {
+    // model
+    this.color = newColor;
+    this.cleared = this.color === "";
+    // view
+    let img = this.cellNode.firstChild;
+    img.src = newColor;
+  }
+
+  /**
+   * Draw a red border to a marked cell
+   */
+  markCell() {
+    this.marked = true;
+    this.cellNode.style.borderColor = "red";
+    this.cellNode.style.borderWidth = "1px";
+    this.cellNode.style.borderStyle = "solid";
+  }
+
+  /**
+   * Removes the border from a marked cell
+   */
+  unmarkCell() {
+    this.marked = false;
+    this.cellNode.style.borderColor = "";
+    this.cellNode.style.borderWidth = "";
+    this.cellNode.style.borderStyle = "";
+  }
+
+  /**
+   * Remove image/color from a cell
+   */
+  clearCell() {
+    this.cleared = true;
+    this.setColor("");
+    this.unmarkCell();
+  }
+
+  /**
+   * The image listener will throw its parent click event
+   * @param {*} event 
+   */
+  imgListener(event) {
+    event.target.parentNode.click();
+  }
+
+  /**
+   * Removing the click listener from both the td and the img elements
+   */
+  removeClickListener() {
+    this.cellNode.removeEventListener("click", this.onClickCell);
+    this.cellNode.firstChild.removeEventListener("click", this.imgListener);
+  }
+}
+
+
+// GAME STATUS: functions to update status info in the user interface
 function updateCurrentScore(newScore) {
   let scoreView = document.getElementById("score");
   scoreView.innerText = newScore;
@@ -461,20 +535,6 @@ function updateBonusMessage(bonus) {
   bonusView.innerText = bonusMessage;
   if (bonus) {
     bonusSoundEffect.play();
-  }
-}
-
-function resetGame() {
-  removeGameOverMessage();
-
-  turnsLeft = DEFAULT_TURNS;
-  updateTurn(turnsLeft);
-  currentScore = 0;
-  updateCurrentScore(currentScore);
-
-  let success = injectTable("gameGrid", "rowInputID", "columnInputID");
-  if (success) {
-    fightSpiritSoundEffect.play();
   }
 }
 
@@ -510,10 +570,10 @@ function removeClickListeners() {
 
 
 // SOUND OPTIONS
-const turnOffMusic = "Turn off music";
-const turnOnMusic = "Turn on music";
-const turnOnEffect = "Turn on Sound Effect";
-const turnOffEffect = "Turn off Sound Effect";
+const turnOffMusic = "Mute music";
+const turnOnMusic = "Unmute music";
+const turnOnEffect = "Unmute Sound Effect";
+const turnOffEffect = "Mute Sound Effect";
 
 let musicOn = true;
 const musicButton = document.getElementById("musicControl");
