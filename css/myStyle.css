@@ -76,9 +76,9 @@ p {
     text-align: justify;
 }
 
-input[type="button"] {
+input[type="button"], button {
     background:#006b57;
-    color: #7cf8d6;
+    color: #dbe5df;
     font-size: medium;
     border-radius: 10px;
     border: 0;

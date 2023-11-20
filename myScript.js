@@ -154,13 +154,14 @@ function injectTable(anID, rowInputID, columnInputID) {
   let columns = parseInt(document.getElementById(columnInputID).value);
   if (isNaN(rows) || isNaN(columns)) {
     alert("Please, input amount of rows and amount of columns.");
-    return;
+    return false;
   }
 
   let div = document.getElementById(anID);
   div.innerHTML = "";
   let table = createTable(rows, columns);
   div.appendChild(table);
+  return true;
 }
 
 function validateNumber(event) {
@@ -192,6 +193,11 @@ resetButton.addEventListener("click", () => {
   resetGame();
 });
 
+let fightSpiritSoundEffect = new Audio("audio/Naruto - The Rising Fighting Spirit.mp3");
+fightSpiritSoundEffect.loop = true;
+
+let bonusSoundEffect = new Audio("audio/dattebayo.mp3");
+let scoreSoundEffect = new Audio("audio/smoke_bomb.mp3");
 
 let animating = false;
 const clearDelayInMilliseconds = 500;
@@ -204,6 +210,7 @@ function onClickCell(event) {
   let cell = event.target;
   //mark cell on click
   console.log("id parsed " + parseId(cell.id));
+  scoreSoundEffect.play();
   bonus = markAdjacentMatches(parseId(cell.id)[0], parseId(cell.id)[1]);
 
   setTimeout(function () {
@@ -452,6 +459,9 @@ function updateBonusMessage(bonus) {
   let bonusMessage = bonus ? "You got a bonus turn! " : "";
   let bonusView = document.getElementById("bonus");
   bonusView.innerText = bonusMessage;
+  if (bonus) {
+    bonusSoundEffect.play();
+  }
 }
 
 function resetGame() {
@@ -462,10 +472,14 @@ function resetGame() {
   currentScore = 0;
   updateCurrentScore(currentScore);
 
-  injectTable("gameGrid", "rowInputID", "columnInputID");
+  let success = injectTable("gameGrid", "rowInputID", "columnInputID");
+  if (success) {
+    fightSpiritSoundEffect.play();
+  }
 }
 
 function gameOver() {
+  fightSpiritSoundEffect.pause();
   removeClickListeners();
   // clear the game grid
   let parent = document.getElementById("gameGrid");
@@ -493,3 +507,44 @@ function removeClickListeners() {
     }
   }
 }
+
+
+// SOUND OPTIONS
+const turnOffMusic = "Turn off music";
+const turnOnMusic = "Turn on music";
+const turnOnEffect = "Turn on Sound Effect";
+const turnOffEffect = "Turn off Sound Effect";
+
+let musicOn = true;
+const musicButton = document.getElementById("musicControl");
+musicButton.innerText = turnOffMusic;
+
+let effectOn = true;
+const soundEffectButton = document.getElementById("soundEffectControl");
+soundEffectButton.innerText = turnOffEffect;
+
+musicButton.addEventListener("click", () =>{
+  if (musicOn) {
+    musicButton.innerText = turnOnMusic;
+    fightSpiritSoundEffect.muted = true;
+    musicOn = false;
+  } else{
+    musicButton.innerText = turnOffMusic;
+    fightSpiritSoundEffect.muted = false;
+    musicOn = true;
+  }
+});
+
+soundEffectButton.addEventListener("click", () =>{
+  if (effectOn) {
+    soundEffectButton.innerText = turnOnEffect;
+    bonusSoundEffect.muted = true;
+    scoreSoundEffect.muted = true;
+    effectOn = false;
+  } else{
+    soundEffectButton.innerText = turnOffEffect;
+    bonusSoundEffect.muted = false;
+    scoreSoundEffect.muted = false;
+    effectOn = true;
+  }
+});
