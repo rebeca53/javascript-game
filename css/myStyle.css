@@ -1,6 +1,6 @@
 body {
     background-image: url("https://images.unsplash.com/photo-1586581277029-5769487f3881?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-    background-color:#dbe5df; /* #c5e7ff ;*/
+    background-color:#dbe5df;
     font-family: 'Trebuchet MS', sans-serif;
     color: #1C1B1F;
     margin-left: auto; 
@@ -116,6 +116,10 @@ table {
 
 td {
     border: red;
+}
+
+td:hover, button:hover {
+    cursor: pointer;
 }
 
 #attribution {
