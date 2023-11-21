@@ -76,17 +76,17 @@ function onClickCell(event) {
       setTimeout(function () {
         fillNewColors();
         animating = false;
-        // Delay to display game over after user sees the updated score
-        setTimeout(() => {
-          if (turnsLeft === 0) {
-            gameOver();
-          }
-        }, 1000);
       }, fillDelayInMilliseconds);
     }, fallDownDelayInMilliseconds);
   }, clearDelayInMilliseconds);
-  turnsLeft--;
 
+  turnsLeft--;
+  // Delay to display game over after user sees the updated score
+  setTimeout(() => {
+    if (turnsLeft <= 0) {
+      gameOver();
+    }
+  }, 1500 + fillDelayInMilliseconds + fallDownDelayInMilliseconds + clearDelayInMilliseconds);
   // Update score and turns on the screen
   updateTurn(turnsLeft);
   updateBonusMessage(bonus);
