@@ -19,7 +19,9 @@ let colsNumber = 0;
 // HTML elements
 let rowInput = document.getElementById("rowInputID");
 let columnInput = document.getElementById("columnInputID");
-let fightSpiritSoundEffect = new Audio("audio/Naruto - The Rising Fighting Spirit.mp3");
+let fightSpiritSoundEffect = new Audio(
+  "audio/Naruto - The Rising Fighting Spirit.mp3"
+);
 let bonusSoundEffect = new Audio("audio/dattebayo.mp3");
 let scoreSoundEffect = new Audio("audio/smoke_bomb.mp3");
 let resetButton = document.getElementById("resetButton");
@@ -40,7 +42,7 @@ rowInput.addEventListener("focusout", validateNumber);
 columnInput.addEventListener("focusout", validateNumber);
 resetButton.addEventListener("click", resetGame);
 
- // Set background music to play in loop
+// Set background music to play in loop
 fightSpiritSoundEffect.loop = true;
 
 // EVENT HANDLERS
@@ -52,8 +54,8 @@ fightSpiritSoundEffect.loop = true;
  * - Fill with new colors
  * - Apply bonus rules
  * - Update score, turns and bonus message
- * - Game over, if applicable 
- * @param {*} event 
+ * - Game over, if applicable
+ * @param {*} event
  */
 function onClickCell(event) {
   // Check if there is still animation from the previous "click" event
@@ -75,7 +77,7 @@ function onClickCell(event) {
         fillNewColors();
         animating = false;
         // Delay to display game over after user sees the updated score
-        setTimeout(( )=> {
+        setTimeout(() => {
           if (turnsLeft === 0) {
             gameOver();
           }
@@ -97,7 +99,7 @@ function onClickCell(event) {
 /**
  * Event handler for the fields to input the rows and the columns number.
  * Check if they are valid numbers from 1 to 100.
- * @param {*} event 
+ * @param {*} event
  */
 function validateNumber(event) {
   if (isNaN(event.target.value)) {
@@ -143,7 +145,7 @@ function resetGame() {
 // mark the matched colors in the right
 // stop when it finds a different color
 function markRight(line, column) {
-  console.log("mark right " + line + "," + column);
+  //console.log("mark right " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
@@ -162,7 +164,7 @@ function markRight(line, column) {
 // mark the matched colors in the left
 // stop when it finds a different color
 function markLeft(line, column) {
-  console.log("mark left " + line + "," + column);
+  //console.log("mark left " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
@@ -182,7 +184,7 @@ function markLeft(line, column) {
 // mark the matched colors in the up direction
 // stop when it finds a different color
 function markUp(line, column) {
-  console.log("mark up " + line + "," + column);
+  //console.log("mark up " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
@@ -202,7 +204,7 @@ function markUp(line, column) {
 // mark the matched colors in the down direction
 // stop when it finds a different color
 function markDown(line, column) {
-  console.log("mark down " + line + "," + column);
+  //console.log("mark down " + line + "," + column);
   let increaseScore = 0;
   let colorToCheck = getCellColor(line + "," + column);
   let marked = true;
@@ -254,19 +256,17 @@ function clearMarkedCells() {
 
 // the marks in the columns should bubble up to the surface
 function fallDownUnmarked() {
-  console.log("Fall down");
+  //console.log("Fall down");
   let swapped = true;
   while (swapped) {
     swapped = false;
     for (let i = rowsNumber - 1; i > 0; i--) {
       for (let j = 0; j < colsNumber; j++) {
         if (isCleared(i + "," + j) && !isCleared(i - 1 + "," + j)) {
-          console.log("swapp");
-          let temp = getCellColor(i + "," + j); //getCell(i+","+j).cloneNode(true);
+          //console.log("swapp");
+          let temp = getCellColor(i + "," + j);
           setCellColor(i + "," + j, getCellColor(i - 1 + "," + j));
-          //         copyCellColor(getCell((i-1)+","+j), getCell(i+","+j));
           setCellColor(i - 1 + "," + j, temp);
-          //         copyCellColor(temp, getCell((i-1)+","+j));
           swapped = true;
         }
       }
@@ -276,14 +276,14 @@ function fallDownUnmarked() {
 
 // replace all the x marks with new colors
 function fillNewColors() {
-  console.log("Fill colors");
+  //console.log("Fill colors");
   let filled = true;
   while (filled) {
     filled = false;
     for (let i = rowsNumber - 1; i >= 0; i--) {
       for (let j = 0; j < colsNumber; j++) {
         if (isCleared(i + "," + j)) {
-          console.log("fill");
+          //console.log("fill");
           unmarkCell(i + "," + j);
           setCellColor(i + "," + j, generateColor());
           filled = true;
@@ -330,12 +330,20 @@ function getCellNode(id) {
 }
 
 function getCellColor(id) {
-  console.log("get cell color " + id);
+  //console.log("get cell color " + id);
   return grid.get(id).getCellColor();
 }
 
 function setCellColor(id, newColor) {
   grid.get(id).setColor(newColor);
+}
+
+function removeClickListeners() {
+  for (let i = rowsNumber - 1; i >= 0; i--) {
+    for (let j = 0; j < colsNumber; j++) {
+      grid.get(i + "," + j).removeClickListener();
+    }
+  }
 }
 
 // generate a random color
@@ -422,7 +430,7 @@ class Cell {
    * - Add the listener
    * - set random color/image
    * @param {*} id the id is a string in the format (line,column)
-   * @param {*} onClickCell the click event handler function 
+   * @param {*} onClickCell the click event handler function
    */
   constructor(id, onClickCell) {
     this.id = id;
@@ -502,7 +510,7 @@ class Cell {
 
   /**
    * The image listener will throw its parent click event
-   * @param {*} event 
+   * @param {*} event
    */
   imgListener(event) {
     event.target.parentNode.click();
@@ -516,7 +524,6 @@ class Cell {
     this.cellNode.firstChild.removeEventListener("click", this.imgListener);
   }
 }
-
 
 // GAME STATUS: functions to update status info in the user interface
 function updateCurrentScore(newScore) {
@@ -560,15 +567,6 @@ function removeGameOverMessage() {
   }
 }
 
-function removeClickListeners() {
-  for (let i = rowsNumber - 1; i >= 0; i--) {
-    for (let j = 0; j < colsNumber; j++) {
-      grid.get(i + "," + j).removeClickListener();
-    }
-  }
-}
-
-
 // SOUND OPTIONS
 const turnOffMusic = "Mute music";
 const turnOnMusic = "Unmute music";
@@ -583,25 +581,25 @@ let effectOn = true;
 const soundEffectButton = document.getElementById("soundEffectControl");
 soundEffectButton.innerText = turnOffEffect;
 
-musicButton.addEventListener("click", () =>{
+musicButton.addEventListener("click", () => {
   if (musicOn) {
     musicButton.innerText = turnOnMusic;
     fightSpiritSoundEffect.muted = true;
     musicOn = false;
-  } else{
+  } else {
     musicButton.innerText = turnOffMusic;
     fightSpiritSoundEffect.muted = false;
     musicOn = true;
   }
 });
 
-soundEffectButton.addEventListener("click", () =>{
+soundEffectButton.addEventListener("click", () => {
   if (effectOn) {
     soundEffectButton.innerText = turnOnEffect;
     bonusSoundEffect.muted = true;
     scoreSoundEffect.muted = true;
     effectOn = false;
-  } else{
+  } else {
     soundEffectButton.innerText = turnOffEffect;
     bonusSoundEffect.muted = false;
     scoreSoundEffect.muted = false;
