@@ -4,6 +4,7 @@ let turnsLeft = DEFAULT_TURNS;
 let currentScore = 0;
 let bonus = false;
 const grid = new Map();
+let markedList = [];
 
 // Color/image options
 const blueJutsu = "img/jutsu32px.png";
@@ -217,6 +218,8 @@ function markDown(line, column) {
 function markAdjacentMatches(line, column) {
   // mark adjacents
   let increaseScore = 0;
+  markedList = [];
+  
   increaseScore += markLeft(line, column);
   increaseScore += markRight(line, column);
   increaseScore += markUp(line, column);
@@ -236,12 +239,9 @@ function markAdjacentMatches(line, column) {
 }
 
 function clearMarkedCells() {
-  for (let i = rowsNumber - 1; i >= 0; i--) {
-    for (let j = 0; j < colsNumber; j++) {
-      if (isMarked(i + "," + j)) {
-        clearCell(i + "," + j);
-      }
-    }
+  for (let id of markedList) {
+    //console.log("clear "+id);
+    clearCell(id);
   }
 }
 
@@ -275,7 +275,6 @@ function fillNewColors() {
       for (let j = 0; j < colsNumber; j++) {
         if (isCleared(i + "," + j)) {
           //console.log("fill");
-          unmarkCell(i + "," + j);
           setCellColor(i + "," + j, generateColor());
           filled = true;
         }
@@ -298,10 +297,12 @@ function getCell(id) {
 
 function markCell(id) {
   grid.get(id).markCell();
+  //console.log("mark "+id);
+  markedList.push(id);
 }
 
 function unmarkCell(id) {
-  grid.get(id).unmarkCell();
+  markedList.pop(id);
 }
 
 function clearCell(id) {
