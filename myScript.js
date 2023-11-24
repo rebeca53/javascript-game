@@ -75,25 +75,16 @@ function onClickCell(event) {
       fallDownUnmarked();
       setTimeout(function () {
         fillNewColors();
+        if (turnsLeft <= 0) {
+          gameOver();
+        }
         animating = false;
       }, fillDelayInMilliseconds);
     }, fallDownDelayInMilliseconds);
   }, clearDelayInMilliseconds);
 
-  turnsLeft--;
-  // Delay to display game over after user sees the updated score
-  setTimeout(() => {
-    if (turnsLeft <= 0) {
-      gameOver();
-    }
-  }, 1500 + fillDelayInMilliseconds + fallDownDelayInMilliseconds + clearDelayInMilliseconds);
-  // Update score and turns on the screen
   updateTurn(turnsLeft);
   updateBonusMessage(bonus);
-  // Reset bonus value to be computed in the next round
-  setTimeout(() => {
-    bonus = false;
-  }, 4000);
 }
 
 /**
@@ -222,7 +213,7 @@ function markDown(line, column) {
 
 // mark color matches in the 4 directions
 // keep track of the score
-// apply bonus rules
+// apply turn bonus rules
 function markAdjacentMatches(line, column) {
   // mark adjacents
   let increaseScore = 0;
@@ -237,9 +228,9 @@ function markAdjacentMatches(line, column) {
   updateCurrentScore(currentScore);
 
   if (increaseScore > 3) {
-    turnsLeft++;
     return true;
   } else {
+    turnsLeft--;
     return false;
   }
 }
