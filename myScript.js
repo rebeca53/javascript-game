@@ -3,6 +3,8 @@ const DEFAULT_TURNS = 5;
 let turnsLeft = DEFAULT_TURNS;
 let currentScore = 0;
 let bonus = false;
+
+// The grid
 const grid = new Map();
 let markedList = [];
 
@@ -309,10 +311,6 @@ function clearCell(id) {
   grid.get(id).clearCell();
 }
 
-function isMarked(id) {
-  return grid.get(id).marked;
-}
-
 function isCleared(id) {
   return grid.get(id).cleared;
 }
@@ -475,7 +473,6 @@ class Cell {
    * Draw a red border to a marked cell
    */
   markCell() {
-    this.marked = true;
     this.cellNode.style.borderColor = "red";
     this.cellNode.style.borderWidth = "1px";
     this.cellNode.style.borderStyle = "solid";
@@ -485,7 +482,6 @@ class Cell {
    * Removes the border from a marked cell
    */
   unmarkCell() {
-    this.marked = false;
     this.cellNode.style.borderColor = "";
     this.cellNode.style.borderWidth = "";
     this.cellNode.style.borderStyle = "";
